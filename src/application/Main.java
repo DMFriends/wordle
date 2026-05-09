@@ -14,6 +14,7 @@ import javafx.scene.image.Image;
 import javafx.scene.text.*;
 import javafx.scene.paint.*;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Set;
 
 public class Main extends Application
@@ -243,9 +244,14 @@ public class Main extends Application
 			});
 
 			primaryStage.setTitle("Wordle");
-
-			Image icon = new Image("assets/wordle.png");
-			primaryStage.getIcons().add(icon);
+			
+			primaryStage.getIcons().add(
+			    new Image(
+			        Objects.requireNonNull(
+			            getClass().getResourceAsStream("/resources/wordle.png")
+			        )
+			    )
+			);
 			
 			primaryStage.setMaxWidth(Screen.getPrimary().getVisualBounds().getWidth());
 			primaryStage.setMaxHeight(Screen.getPrimary().getVisualBounds().getHeight());

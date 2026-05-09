@@ -1,4 +1,5 @@
 /bin/
+/dist/
 /.metadata/
 /.settings/
 /runtime/
@@ -9,4 +10,6 @@
 *.log
 *.xml
 *.zip
+*.jar
+*.exe
 .classpath
