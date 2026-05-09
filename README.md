@@ -5,6 +5,6 @@ This program was written in collaboration with [Boris098](https://github.com/Bor
 
 ## Running the program - Windows
 
-Download and run the `.exe` installer from the [latest release](https://github.com/DMFriends/scrabble/releases/latest).
+Download and run the `.exe` installer from the [latest release](https://github.com/DMFriends/wordle/releases/latest).
 
 ## macOS and Linux - coming soon!
