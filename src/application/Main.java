@@ -22,6 +22,8 @@ public class Main extends Application
 	public static Set<String> possibleWords = LoadTextFile.loadWords();
 	public static String correctWord = Wordle.chooseRandomWord();
 	public static Text[] letterTexts = new Text[26];
+	
+	public static final String APP_VERSION = "v1.0";
 
 	public int counter = 0;
 
@@ -243,7 +245,7 @@ public class Main extends Application
 				}
 			});
 
-			primaryStage.setTitle("Wordle");
+			primaryStage.setTitle("Wordle " + APP_VERSION);
 			
 			primaryStage.getIcons().add(
 			    new Image(
