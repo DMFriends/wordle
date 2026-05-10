@@ -1,0 +1,72 @@
+name: Build release packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to put in the package name
+        required: true
+        default: "1.0"
+  release:
+    types:
+      - published
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: Package ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Linux
+            os: ubuntu-latest
+            package_type: deb
+            java_version: "26"
+            enable_preview: "true"
+          - label: macOS
+            os: macos-latest
+            package_type: dmg
+            java_version: "26"
+            enable_preview: "true"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java_version }}
+          check-latest: true
+
+      - name: Install Linux package tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fakeroot
+
+      - name: Build package
+        shell: bash
+        env:
+          APP_VERSION: ${{ github.event.release.tag_name || inputs.version }}
+          PACKAGE_TYPE: ${{ matrix.package_type }}
+          ENABLE_PREVIEW: ${{ matrix.enable_preview }}
+        run: bash scripts/package-unix.sh
+
+      - name: Save package artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: wordle-${{ matrix.package_type }}
+          path: release/*
+
+      - name: Attach package to release
+        if: github.event_name == 'release'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.event.release.tag_name }}" release/* --clobber
