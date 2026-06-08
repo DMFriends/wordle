@@ -57,7 +57,7 @@ public class Wordle
 		dialog.initModality(Modality.APPLICATION_MODAL);
 		dialog.setTitle("Wordle " + Main.APP_VERSION + " - Choose a Word");
 		dialog.getIcons().add(new Image(Objects.requireNonNull(Wordle.class.getResourceAsStream("/resources/wordle.png"))));
-		dialog.setOnCloseRequest(e -> {
+		dialog.setOnCloseRequest(_ -> {
 			System.exit(0);
 		});
 
@@ -71,7 +71,7 @@ public class Wordle
 		Button okButton = new Button("OK");
 		final String[] result = new String[1];
 
-		randomWordButton.setOnAction(e -> 
+		randomWordButton.setOnAction(_ -> 
 					{
 						result[0] = chooseRandomWord();
 						word.setText(result[0]);
@@ -79,14 +79,14 @@ public class Wordle
 						dialog.close();
 					});
 		
-		okButton.setOnAction(e -> {
+		okButton.setOnAction(_ -> {
 			result[0] = word.getText().trim().toLowerCase();
-			if (result[0].length() > 10)
+			if(result[0].length() > 10 || result[0].length() < 3)
 			{
 				Alert alert = new Alert(Alert.AlertType.ERROR);
 				alert.setTitle("Invalid word length");
-				alert.setHeaderText("Word too long");
-				alert.setContentText("Please enter a word with 10 letters or fewer.");
+				alert.setHeaderText(result[0].length() > 10 ? "Word too long" : "Word too short");
+				alert.setContentText("Please enter a word with 3-10 letters.");
 				alert.initOwner(dialog);
 				alert.showAndWait();
 				return;
