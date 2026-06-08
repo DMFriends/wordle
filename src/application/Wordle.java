@@ -215,7 +215,7 @@ public class Wordle
 			}
 		}
 
-		if (counter == 5)
+		if (counter == realWord.size())
 		{
 			return true;
 		}

@@ -37,6 +37,14 @@ public class Main extends Application
 		{
 			selectedWord = Wordle.getWord(primaryStage);
 
+			final double CELL_SIZE = 80;
+			final double CELL_GAP = 10;
+			final double BOARD_MARGIN = 180; // horizontal space reserved on each side of the board
+
+			double boardWidth = selectedWord.length() * (CELL_SIZE + CELL_GAP) - CELL_GAP;
+			double windowWidth = boardWidth + 2 * BOARD_MARGIN;
+			double boardStartX = BOARD_MARGIN;
+
 			Rectangle[][] letterBoxes = new Rectangle[6][selectedWord.length()];
 			Text[][] letters = new Text[6][selectedWord.length()];
 
@@ -128,12 +136,12 @@ public class Main extends Application
 			topBox.setAlignment(Pos.CENTER);
 
 			BorderPane root = new BorderPane();
-			root.setPrefSize(800, 700);
+			root.setPrefSize(windowWidth, 700);
 			root.setStyle("-fx-background-color: lightgray;");
 			root.setTop(topBox);
 
 			Button restart = new Button("Restart");
-			restart.relocate(650, 40);
+			restart.relocate(windowWidth - 150, 40);
 			restart.setScaleX(1.5);
 			restart.setScaleY(1.5);
 			restart.setOnAction(event ->
@@ -149,9 +157,9 @@ public class Main extends Application
 			{
 				for (int j = 0; j < letterBoxes[i].length; j++)
 				{
-					Rectangle rect = new Rectangle(80, 80, Color.WHITE);
-					rect.setY(90 * i + 100);
-					rect.setX(90 * j + 170);
+					Rectangle rect = new Rectangle(CELL_SIZE, CELL_SIZE, Color.WHITE);
+					rect.setY((CELL_SIZE + CELL_GAP) * i + 100);
+					rect.setX((CELL_SIZE + CELL_GAP) * j + boardStartX);
 					rect.setStroke(Color.BLACK);
 					letterBoxes[i][j] = rect;
 
@@ -207,9 +215,9 @@ public class Main extends Application
 							result.setText("You won!\nWould you like to play again?");
 							result.setFont(new Font(30));
 							result.setFill(Color.GREEN);
-							result.setX(200);
-							result.setY(40);
 							result.setTextAlignment(TextAlignment.CENTER);
+							centerTextX(result, windowWidth);
+							result.setY(40);
 							guess.setDisable(true);
 							guess.clear();
 							guesses.getChildren().add(restart);
@@ -220,9 +228,9 @@ public class Main extends Application
 							result.setText("You lost! The word was " + selectedWord + ".\nWould you like to try again?");
 							result.setFont(new Font(25));
 							result.setFill(Color.RED);
-							result.setX(230);
-							result.setY(40);
 							result.setTextAlignment(TextAlignment.CENTER);
+							centerTextX(result, windowWidth);
+							result.setY(40);
 							guess.setDisable(true);
 							guess.clear();
 							guesses.getChildren().add(restart);
@@ -240,9 +248,9 @@ public class Main extends Application
 						error.setText("Invalid Guess!!\nPlease enter a valid " + Main.selectedWord.length() + "-letter word.");
 						error.setFont(new Font(30));
 						error.setFill(Color.RED);
-						error.setX(170);
-						error.setY(40);
 						error.setTextAlignment(TextAlignment.CENTER);
+						centerTextX(error, windowWidth);
+						error.setY(40);
 						guesses.getChildren().add(error);
 					}
 				}
@@ -265,12 +273,19 @@ public class Main extends Application
 
 			primaryStage.setScene(scene);
 			primaryStage.show();
+			primaryStage.centerOnScreen();
 		}
 
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
+	}
+
+	// Centers a (possibly multi-line) Text node horizontally within the given width
+	private static void centerTextX(Text text, double containerWidth)
+	{
+		text.setX((containerWidth - text.getBoundsInLocal().getWidth()) / 2);
 	}
 
 	private void restart(Stage stage)
