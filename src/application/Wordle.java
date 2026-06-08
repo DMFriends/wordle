@@ -62,7 +62,7 @@ public class Wordle
 		});
 
 		TextField word = new TextField();
-		word.setPromptText("Enter a 5-letter word: ");
+		word.setPromptText("Enter a word: ");
 		word.setPrefWidth(160);
 		word.setMinWidth(160);
 		word.setMaxWidth(160);
