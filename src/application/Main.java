@@ -20,10 +20,12 @@ import java.util.Set;
 public class Main extends Application
 {
 	public static Set<String> possibleWords = LoadTextFile.loadWords();
-	public static String correctWord = Wordle.chooseRandomWord();
 	public static Text[] letterTexts = new Text[26];
+	public static String selectedWord;
+
+	public static boolean isRandomWord = false;
 	
-	public static final String APP_VERSION = "v1.0";
+	public static final String APP_VERSION = "v2.0";
 
 	public int counter = 0;
 
@@ -33,8 +35,10 @@ public class Main extends Application
 	{
 		try
 		{
-			Rectangle[][] letterBoxes = new Rectangle[6][5];
-			Text[][] letters = new Text[6][5];
+			selectedWord = Wordle.getWord(primaryStage);
+
+			Rectangle[][] letterBoxes = new Rectangle[6][selectedWord.length()];
+			Text[][] letters = new Text[6][selectedWord.length()];
 
 			TextFlow alphabet = new TextFlow();
 			alphabet.setLineSpacing(5);
@@ -79,9 +83,9 @@ public class Main extends Application
 				String currentText = newValue.toUpperCase(); // Convert to uppercase for display consistency
 
 				// Truncate if longer than WORD_LENGTH
-				if (currentText.length() > 5)
+				if (currentText.length() > selectedWord.length())
 				{
-					currentText = currentText.substring(0, 5);
+					currentText = currentText.substring(0, selectedWord.length());
 					// Optionally, you can set the text back to the truncated version
 					// This prevents the user from typing more, but can feel a bit abrupt
 					guess.setText(currentText);
@@ -90,7 +94,7 @@ public class Main extends Application
 				if (counter < 6)
 				{
 					// Update the display boxes
-					for (int i = 0; i < 5; i++)
+					for (int i = 0; i < selectedWord.length(); i++)
 					{
 						if (i < currentText.length())
 						{
@@ -136,7 +140,6 @@ public class Main extends Application
 			{
 				root.getChildren().remove(restart);
 				counter = 0;
-				correctWord = Wordle.chooseRandomWord();
 				restart(primaryStage);
 			});
 
@@ -183,12 +186,12 @@ public class Main extends Application
 					String input = guess.getText().toLowerCase();
 					guesses.getChildren().remove(error);
 
-					// Check if the input is a valid 5 letter word
+					// Check if the input is a valid word for the current game mode
 					if (Wordle.checkGuess(input))
 					{
 						// If the input is valid, we will add it to the guessArr
 						guessArr.clear();
-						input = input.substring(0, 5);
+						input = input.substring(0, input.length());
 						for (int i = 0; i < input.length(); i++)
 						{
 							char c = input.charAt(i);
@@ -214,7 +217,7 @@ public class Main extends Application
 						}
 						else if (!Wordle.result(guessArr) && counter == 6)
 						{
-							result.setText("You lost! The word was " + correctWord + ".\nWould you like to try again?");
+							result.setText("You lost! The word was " + selectedWord + ".\nWould you like to try again?");
 							result.setFont(new Font(25));
 							result.setFill(Color.RED);
 							result.setX(230);
@@ -234,7 +237,7 @@ public class Main extends Application
 					}
 					else
 					{
-						error.setText("Invalid Guess!!\nPlease enter a valid 5-letter word.");
+						error.setText("Invalid Guess!!\nPlease enter a valid " + Main.selectedWord.length() + "-letter word.");
 						error.setFont(new Font(30));
 						error.setFill(Color.RED);
 						error.setX(170);
@@ -259,6 +262,7 @@ public class Main extends Application
 			primaryStage.setMaxHeight(Screen.getPrimary().getVisualBounds().getHeight());
 
 			primaryStage.setResizable(false);
+
 			primaryStage.setScene(scene);
 			primaryStage.show();
 		}
