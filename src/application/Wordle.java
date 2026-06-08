@@ -32,24 +32,6 @@ public class Wordle
 		return randomWord;
 	}
 
-	// public static String getWord(Stage primaryStage)
-	// {
-	// 	TextField word = new TextField();
-	// 	word.setPromptText("Enter a 5-letter word: ");
-
-	// 	BorderPane enterWord = new BorderPane();
-	// 	enterWord.setCenter(word);
-
-	// 	Button randomWordButton = new Button("Random Word");
-	// 	randomWordButton.setOnAction(_ -> {
-	// 		word.setText(chooseRandomWord());
-	// 	});
-
-	// 	primaryStage.setScene(new Scene(enterWord, 400, 200));
-	// 	primaryStage.show();
-	// 	return word.getText();
-	// }
-
 	public static String getWord(Stage owner)
 	{
 		Stage dialog = new Stage();
