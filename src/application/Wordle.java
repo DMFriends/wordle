@@ -77,6 +77,16 @@ public class Wordle
 					alert.showAndWait();
 					return;
 				}
+				else if(!result[0].matches("[A-Za-z]*"))
+				{
+					Alert alert = new Alert(Alert.AlertType.ERROR);
+					alert.setTitle("Invalid word");
+					alert.setHeaderText("Word must contain letters only");
+					alert.setContentText("Please enter a word with letters only.");
+					alert.initOwner(dialog);
+					alert.showAndWait();
+					return;
+				}
 				
 				dialog.close();
 			}
