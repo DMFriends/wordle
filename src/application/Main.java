@@ -1,21 +1,21 @@
 package application;
 
-import javafx.application.Application;
-import javafx.stage.Screen;
-import javafx.stage.Stage;
-import javafx.scene.*;
-import javafx.scene.layout.*;
-import javafx.scene.control.*;
-import javafx.scene.shape.*;
-import javafx.geometry.Bounds;
-import javafx.geometry.Pos;
-import javafx.scene.input.*;
-import javafx.scene.image.Image;
-import javafx.scene.text.*;
-import javafx.scene.paint.*;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Set;
+import javafx.application.Application;
+import javafx.geometry.Bounds;
+import javafx.geometry.Pos;
+import javafx.scene.*;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.input.*;
+import javafx.scene.layout.*;
+import javafx.scene.paint.*;
+import javafx.scene.shape.*;
+import javafx.scene.text.*;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
 
 public class Main extends Application
 {
@@ -29,7 +29,7 @@ public class Main extends Application
 
 	public int counter = 0;
 
-	@SuppressWarnings("unused")
+	@SuppressWarnings({"unused", "CallToPrintStackTrace"})
 	@Override
 	public void start(Stage primaryStage)
 	{
@@ -39,11 +39,18 @@ public class Main extends Application
 
 			final double CELL_SIZE = 80;
 			final double CELL_GAP = 10;
-			final double BOARD_MARGIN = 180; // horizontal space reserved on each side of the board
+			final double MIN_SIDE_MARGIN = 100; // minimum margin on each side of the board
+			final double ALPHABET_WIDTH = 720; // width of the alphabet display
 
 			double boardWidth = selectedWord.length() * (CELL_SIZE + CELL_GAP) - CELL_GAP;
-			double windowWidth = boardWidth + 2 * BOARD_MARGIN;
-			double boardStartX = BOARD_MARGIN;
+			double windowWidth = Math.max(boardWidth + 2 * MIN_SIDE_MARGIN, ALPHABET_WIDTH);
+			double boardStartX = (windowWidth - boardWidth) / 2; // center the board
+			
+			// Calculate window height: alphabet + rows + margins
+			double alphabetHeight = 80;
+			double boardHeight = 6 * (CELL_SIZE + CELL_GAP) + 100; // 100 for top offset
+			double bottomMargin = 30; // space for error/result messages
+			double windowHeight = alphabetHeight + boardHeight + bottomMargin;
 
 			Rectangle[][] letterBoxes = new Rectangle[6][selectedWord.length()];
 			Text[][] letters = new Text[6][selectedWord.length()];
@@ -51,6 +58,7 @@ public class Main extends Application
 			TextFlow alphabet = new TextFlow();
 			alphabet.setLineSpacing(5);
 			alphabet.setPrefWidth(720);
+			alphabet.setTextAlignment(TextAlignment.CENTER);
 
 			for (int i = 0; i < 26; i++)
 			{
@@ -130,18 +138,20 @@ public class Main extends Application
 				}
 			});
 
-			ArrayList<String> guessArr = new ArrayList<String>();
+			ArrayList<String> guessArr = new ArrayList<>();
 
 			HBox topBox = new HBox(alphabet);
 			topBox.setAlignment(Pos.CENTER);
+			topBox.setMaxWidth(Double.MAX_VALUE);
+			topBox.setPrefHeight(80);
 
 			BorderPane root = new BorderPane();
-			root.setPrefSize(windowWidth, 700);
+			root.setPrefSize(windowWidth, windowHeight);
 			root.setStyle("-fx-background-color: lightgray;");
 			root.setTop(topBox);
 
 			Button restart = new Button("Restart");
-			restart.relocate(windowWidth - 150, 40);
+			restart.relocate(windowWidth - 130, 15);
 			restart.setScaleX(1.5);
 			restart.setScaleY(1.5);
 			restart.setOnAction(event ->
@@ -151,7 +161,16 @@ public class Main extends Application
 				restart(primaryStage);
 			});
 
+
 			Pane guesses = new Pane();
+
+			Button giveUp = new Button("Give Up");
+			giveUp.relocate(75, 40);
+			giveUp.setScaleX(1.5);
+			giveUp.setScaleY(1.5);
+			giveUp.setFocusTraversable(false);
+			
+			guesses.getChildren().add(giveUp);
 
 			for (int i = 0; i < letterBoxes.length; i++)
 			{
@@ -184,6 +203,22 @@ public class Main extends Application
 
 			root.setCenter(guesses);
 
+			giveUp.setOnAction(event ->
+			{
+				guesses.getChildren().remove(giveUp);
+				guesses.getChildren().remove(error);
+				result.setText("You lost! The word was " + selectedWord + ".\nWould you like to try again?");
+				result.setFont(new Font(24));
+				result.setFill(Color.RED);
+				result.setTextAlignment(TextAlignment.CENTER);
+				centerTextX(result, windowWidth);
+				result.setY(40);
+				guess.setDisable(true);
+				guess.clear();
+				guesses.getChildren().add(restart);
+				guesses.getChildren().add(result);
+			});
+
 			Scene scene = new Scene(root);
 
 			scene.setOnKeyPressed(event ->
@@ -212,8 +247,9 @@ public class Main extends Application
 
 						if (Wordle.result(guessArr))
 						{
+							guesses.getChildren().remove(giveUp);
 							result.setText("You won!\nWould you like to play again?");
-							result.setFont(new Font(30));
+							result.setFont(new Font(24));
 							result.setFill(Color.GREEN);
 							result.setTextAlignment(TextAlignment.CENTER);
 							centerTextX(result, windowWidth);
@@ -225,8 +261,9 @@ public class Main extends Application
 						}
 						else if (!Wordle.result(guessArr) && counter == 6)
 						{
+							guesses.getChildren().remove(giveUp);
 							result.setText("You lost! The word was " + selectedWord + ".\nWould you like to try again?");
-							result.setFont(new Font(25));
+							result.setFont(new Font(24));
 							result.setFill(Color.RED);
 							result.setTextAlignment(TextAlignment.CENTER);
 							centerTextX(result, windowWidth);
@@ -246,7 +283,7 @@ public class Main extends Application
 					else
 					{
 						error.setText("Invalid Guess!!\nPlease enter a valid " + Main.selectedWord.length() + "-letter word.");
-						error.setFont(new Font(30));
+						error.setFont(new Font(24));
 						error.setFill(Color.RED);
 						error.setTextAlignment(TextAlignment.CENTER);
 						centerTextX(error, windowWidth);
@@ -274,6 +311,7 @@ public class Main extends Application
 			primaryStage.setScene(scene);
 			primaryStage.show();
 			primaryStage.centerOnScreen();
+			guess.requestFocus();
 		}
 
 		catch (Exception e)

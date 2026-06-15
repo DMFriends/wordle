@@ -11,12 +11,15 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.input.*;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -39,7 +42,7 @@ public class Wordle
 		dialog.initModality(Modality.APPLICATION_MODAL);
 		dialog.setTitle("Wordle " + Main.APP_VERSION + " - Choose a Word");
 		dialog.getIcons().add(new Image(Objects.requireNonNull(Wordle.class.getResourceAsStream("/resources/wordle.png"))));
-		dialog.setOnCloseRequest(_ -> {
+		dialog.setOnCloseRequest(event -> {
 			System.exit(0);
 		});
 
@@ -50,33 +53,41 @@ public class Wordle
 		word.setMaxWidth(160);
 
 		Button randomWordButton = new Button("Random Word");
-		Button okButton = new Button("OK");
 		final String[] result = new String[1];
 
-		randomWordButton.setOnAction(_ -> 
-					{
-						result[0] = chooseRandomWord();
-						word.setText(result[0]);
-						Main.isRandomWord = true;
-						dialog.close();
-					});
-		
-		okButton.setOnAction(_ -> {
-			result[0] = word.getText().trim().toLowerCase();
-			if(result[0].length() > 10 || result[0].length() < 3)
+		randomWordButton.setOnAction(event -> 
 			{
-				Alert alert = new Alert(Alert.AlertType.ERROR);
-				alert.setTitle("Invalid word length");
-				alert.setHeaderText(result[0].length() > 10 ? "Word too long" : "Word too short");
-				alert.setContentText("Please enter a word with 3-10 letters.");
-				alert.initOwner(dialog);
-				alert.showAndWait();
-				return;
+				result[0] = chooseRandomWord();
+				word.setText(result[0]);
+				Main.isRandomWord = true;
+				dialog.close();
+			});
+
+		word.setOnKeyPressed(event -> {
+			if (event.getCode() == KeyCode.ENTER)
+			{
+				result[0] = word.getText().trim().toLowerCase();
+				if(result[0].length() > 10 || result[0].length() < 3)
+				{
+					Alert alert = new Alert(Alert.AlertType.ERROR);
+					alert.setTitle("Invalid word length");
+					alert.setHeaderText(result[0].length() > 10 ? "Word too long" : "Word too short");
+					alert.setContentText("Please enter a word with 3-10 letters.");
+					alert.initOwner(dialog);
+					alert.showAndWait();
+					return;
+				}
+				
+				dialog.close();
 			}
-			dialog.close();
 		});
 
-		VBox layout = new VBox(10, word, randomWordButton, okButton);
+		Label hint = new Label("Press Enter when you are done typing your word in the text field.");
+		hint.setWrapText(true);
+		hint.setMaxWidth(260);
+		hint.setTextAlignment(TextAlignment.CENTER);
+
+		VBox layout = new VBox(10, word, randomWordButton, hint);
 		layout.setAlignment(Pos.CENTER);
 		layout.setPadding(new Insets(10));
 		layout.setPrefWidth(220);
@@ -93,21 +104,11 @@ public class Wordle
 	{
 		if(Main.isRandomWord)
 		{
-			if (guess.length() >= 5 && Main.possibleWords.contains(guess.toLowerCase().substring(0,5)))
-			{
-				return true;
-			}
-			
-			return false;
+			return guess.length() >= 5 && Main.possibleWords.contains(guess.toLowerCase().substring(0,5));
 		}
 		else
 		{
-			if(guess.length() >= Main.selectedWord.length())
-			{
-				return true;
-			}
-			
-			return false;
+			return guess.length() >= Main.selectedWord.length();
 		}
 		
 		
