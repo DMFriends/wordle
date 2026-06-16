@@ -1,15 +1,10 @@
 name: Build release packages
 
 on:
+  release:
+    types:
+      - published
   workflow_dispatch:
-    inputs:
-      version:
-        description: Version to put in the package name
-        required: true
-        default: "1.0"
-  push:
-    tags:
-      - "v*"
 
 permissions:
   contents: write
@@ -36,6 +31,26 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name || github.ref }}
+          fetch-depth: 0
+
+      - name: Resolve package version
+        id: package_version
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            version="${{ github.event.release.tag_name }}"
+          else
+            version="$(git tag --list --sort=-v:refname | head -n 1)"
+            if [[ -z "$version" ]]; then
+              echo "No tags found. Create a version tag before running this workflow manually." >&2
+              exit 1
+            fi
+            git checkout "$version"
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Set up Java
         uses: actions/setup-java@v5
@@ -53,7 +68,7 @@ jobs:
       - name: Build package
         shell: bash
         env:
-          APP_VERSION: ${{ github.event.release.tag_name || inputs.version }}
+          APP_VERSION: ${{ steps.package_version.outputs.version }}
           PACKAGE_TYPE: ${{ matrix.package_type }}
           ENABLE_PREVIEW: ${{ matrix.enable_preview }}
         run: bash scripts/package-unix.sh
